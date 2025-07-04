@@ -1,117 +1,143 @@
-import "./form.css"
+import "./form.css";
+import Filter from "./filter";
 import { useState } from "react";
-export default function Form(){
 
-    const [tarefa,setTarefa] = useState({nome : "",status : "", prioridade : ""})
+export default function Form() {
+  const [tarefa, setTarefa] = useState({
+    nome: "",
+    status: "",
+    prioridade: "",
+    data: "",
+  });
 
-    const [tarefas,setTarefas] = useState([])
+  const [tarefas, setTarefas] = useState([]);
 
-    
-
-   const adicionaTarefa = (e) => {
-        e.preventDefault();
-       
-        setTarefas([...tarefas,tarefa])
-        setTarefa({nome : "",status : "", prioridade : ""})
-
-    }
-    function Reset(){
-        setTarefas([])
+  const adicionaTarefa = (e) => {
+    e.preventDefault();
+    if (!tarefa.nome || !tarefa.status || !tarefa.prioridade || !tarefa.data) {
+      return;
     }
 
-    function concluirTarefa(nome){
-    const tarefas_novas = tarefas.map(tarefa =>
-        tarefa.nome == nome ? {...tarefa,status:'Realizada'} : tarefa
+    setTarefas([...tarefas, tarefa]);
+    setTarefa({ nome: "", status: "", prioridade: "", data: "" });
+  };
+
+  const concluirTarefa = (nome) => {
+    const tarefasAtualizadas = tarefas.map((t) =>
+      t.nome === nome ? { ...t, status: "Realizada" } : t
     );
-    
-    setTarefas(tarefas_novas)}
-    function abrirTarefa(nome){
-        const tarefas_novas = tarefas.map(tarefa =>
-            tarefa.nome == nome ? {...tarefa,status:'Não realizada'} : tarefa
-        );
+    setTarefas(tarefasAtualizadas);
+  };
 
-    setTarefas(tarefas_novas)
-    
-    }
+  const reabrirTarefa = (nome) => {
+    const tarefasAtualizadas = tarefas.map((t) =>
+      t.nome === nome ? { ...t, status: "Não realizada" } : t
+    );
+    setTarefas(tarefasAtualizadas);
+  };
 
-    function Ordenar(ordem){
-        if (ordem === 'cres'){
-            const tarefas_cres = [...tarefas].sort((a,b) =>
-                a.nome.localeCompare(b.nome))
-            setTarefas(tarefas_cres);
-        }
-        else {
-            const tarefas_cres = [...tarefas].sort((a,b) =>
-                b.nome.localeCompare(a.nome))
-            setTarefas(tarefas_cres);
-        }
-    }
+  const excluirTarefa = (nome) => {
+    const novasTarefas = tarefas.filter((t) => t.nome !== nome);
+    setTarefas(novasTarefas);
+  };
 
-    const ordenarPorPrioridade = () => {
-        const prioridadeValor = { "Alta": 3, "Media": 2, "Baixa": 1 }
-        const listaOrdenada = [...tarefas].sort((a, b) =>
-            (prioridadeValor[b.prioridade] - prioridadeValor[a.prioridade] ?? 0)
-        )
-        setTarefas(listaOrdenada)
-    }
+  return (
+    <>
+      <h1>Agenda Pessoal</h1>
 
-    return(
-        <>
-        <h1>Lista de tarefas</h1>
-        
-        <button onClick={Reset}>Resert</button> <br />
-        
-        Filtrar<button onClick={() => Ordenar('cres')}>Crescente</button> <button onClick={() => Ordenar('desc')}>Decrescente</button>
-        <button onClick={() => ordenarPorPrioridade()}>Prioridade</button>
+      <Filter tarefas={tarefas} setTarefas={setTarefas} />
 
-        <h2>Adicione tarefas</h2>
-        <form onSubmit={adicionaTarefa}>
-           
-            <input placeholder="Nome da tarefa" type="text" onChange={(e) => setTarefa({...tarefa, nome : e.target.value})} value={tarefa.nome} />
-            <select id="status" onChange={(e) => setTarefa({...tarefa, status : e.target.value})} value={tarefa.status} >
-                <option value="Não realizada">Status</option>
-                <option value="Realizada">Realizada</option>
-                <option value="Não realizada">Não realizada</option>
-                <option value="Pendente">Pendente</option>
-            </select>
-            <select name="prioridade" id="priorioridade" onChange={(e) => setTarefa({...tarefa, prioridade : e.target.value})} value={tarefa.prioridade}>
-                <option value="Alta">Prioridade</option>
-                <option value="Alta">Alta</option>
-                <option value="Media">Media</option>
-                <option value="Baixa">Baixa</option>
-            </select>
-            <button>Enviar</button>
-        </form>
+      <form onSubmit={adicionaTarefa}>
+        <input
+          type="text"
+          placeholder="Digite o nome da tarefa"
+          value={tarefa.nome}
+          onChange={(e) => setTarefa({ ...tarefa, nome: e.target.value })}
+        />
 
-        {tarefas[0] ? <table border="1">
+        <select
+          value={tarefa.status}
+          onChange={(e) => setTarefa({ ...tarefa, status: e.target.value })}
+        >
+          <option value="">Selecione o status</option>
+          <option value="Não realizada">Não realizada</option>
+          <option value="Em andamento">Em andamento</option>
+          <option value="Realizada">Realizada</option>
+        </select>
+
+        <select
+          value={tarefa.prioridade}
+          onChange={(e) =>
+            setTarefa({ ...tarefa, prioridade: e.target.value })
+          }
+        >
+          <option value="">Escolha a prioridade</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Média</option>
+          <option value="Baixa">Baixa</option>
+        </select>
+
+        <input
+          type="date"
+          value={tarefa.data}
+          onChange={(e) => setTarefa({ ...tarefa, data: e.target.value })}
+        />
+
+        <button type="submit">Adicionar Tarefa</button>
+      </form>
+
+      <h2>Minhas Tarefas</h2>
+
+      {tarefas.length > 0 ? (
+        <table>
+          <thead>
             <tr>
-                <th>Tarefa</th>
-                <th>Status
-                </th>
-                <th>Prioridade</th>
-                
+              <th>Nome</th>
+              <th>Status</th>
+              <th>Prioridade</th>
+              <th>Data</th>
+              <th colSpan={2}>Ações</th>
             </tr>
-           
-                {tarefas.map(tarefa => ( 
-                 <tr>
+          </thead>
+          <tbody>
+            {tarefas.map((tarefa) => (
+              <tr key={tarefa.nome}>
                 <td>{tarefa.nome}</td>
-                
                 <td>{tarefa.status}</td>
                 <td>{tarefa.prioridade}</td>
-                <td>{tarefa.status === "Pendente" || tarefa.status === "Não realizada" ? <button onClick={() => concluirTarefa(tarefa.nome)}>Concluir</button> : <button onClick={() => abrirTarefa(tarefa.nome)}>Abrir</button>}</td>
-                
-                </tr>
-                
+                <td>{tarefa.data}</td>
+                <td>
+                  {tarefa.status === "Realizada" ? (
+                    <button
+                      className="botao-excluir"
+                      onClick={() => reabrirTarefa(tarefa.nome)}
+                    >
+                      Reabrir
+                    </button>
+                  ) : (
+                    <button
+                      className="botao-concluir"
+                      onClick={() => concluirTarefa(tarefa.nome)}
+                    >
+                      Concluir
+                    </button>
+                  )}
+                </td>
+                <td>
+                  <button
+                    className="botao-excluir"
+                    onClick={() => excluirTarefa(tarefa.nome)}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
             ))}
-            
-            
+          </tbody>
         </table>
-        :
-        <p></p>}
-       
-        
-        </>
-
-    )
-
+      ) : (
+        <p style={{ marginTop: "20px" }}>Nenhuma tarefa cadastrada.</p>
+      )}
+    </>
+  );
 }
